@@ -4,23 +4,32 @@ import App from './components/App';
 import registerServiceWorker from './registerServiceWorker';
 import './index.css';
 import * as io from 'socket.io-client';
+import {SyncedState} from '../shared/synced-state';
+import {ClientCommand} from '../shared/client-commands';
+import {ServerCommand} from '../shared/server-commands';
 
-interface SyncedState {
-  name: string;
-}
-
-
-ReactDOM.render(
-  <App />,
-  document.getElementById('root') as HTMLElement
-);
-registerServiceWorker();
-
-
+let syncedState: SyncedState;
 const socket = io('http://localhost:8000');
 
-socket.on('sync', function(data: SyncedState){
-  console.log('welcome!', data);
+function sendServerCommand(command: ServerCommand) {
+  socket.emit('command', command);
+  console.log('send command', command);
+}
+
+function render() {
+  ReactDOM.render(
+    <App syncedState={syncedState} sendServerCommand={sendServerCommand}/>,
+    document.getElementById('root') as HTMLElement
+  );
+}
+
+render();
+registerServiceWorker();
+
+socket.on('command', (clientCommand: ClientCommand) => {
+  console.log('command:', clientCommand);
+  syncedState = clientCommand.state;
+  render();
 });
 
 
