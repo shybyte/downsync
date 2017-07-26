@@ -12,6 +12,17 @@ interface ArticlePageProps {
 }
 
 class ArticlePage extends React.Component<ArticlePageProps, {}> {
+  inputElement: HTMLInputElement;
+
+  onSubmit = (ev: React.FormEvent<any>) => {
+    ev.preventDefault();
+    this.props.sendServerCommand({
+      commandName: 'RenameArticle',
+      id: this.props.articleId,
+      displayName: this.inputElement.value
+    });
+  }
+
   render() {
     const {syncedState, articleId} = this.props;
     const article = syncedState.articles.find(hasId(articleId));
@@ -20,7 +31,17 @@ class ArticlePage extends React.Component<ArticlePageProps, {}> {
     }
     return (
       <div>
-        <input defaultValue={article.displayName} disabled={article.builtIn}/>
+        <form
+          action="#"
+          onSubmit={this.onSubmit}
+        >
+          <input
+            defaultValue={article.displayName}
+            disabled={article.builtIn}
+            ref={(el) => this.inputElement = el!}
+          />
+          <button>Save</button>
+        </form>
       </div>
     );
   }

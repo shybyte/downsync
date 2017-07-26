@@ -55,7 +55,7 @@ class App extends React.Component<AppProps, {}> {
         <div className="App-header">
           <img src={logo} className="App-logo" alt="logo"/>
           <h2>Welcome to DownSync!</h2>
-          <NavLink to="/" exact>Home</NavLink>
+          <NavLink to="/" exact={true}>Home</NavLink>
         </div>
         <div className="App-intro">
           {this.props.syncedState ? renderWhenSynced(this.props.syncedState)

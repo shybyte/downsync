@@ -57,6 +57,13 @@ io.on('connection', socket => {
           syncedState.articles.push(clone);
         });
         break;
+      case 'RenameArticle':
+        doWithArticle(command.id, (article) => {
+          if (!article.builtIn) {
+            article.displayName = command.displayName;
+          }
+        });
+        break;
       case 'DeleteArticle':
         doWithArticle(command.id, (article) => {
           if (canBeDeleted(article)) {
