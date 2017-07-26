@@ -19,6 +19,10 @@ class App extends React.Component<AppProps, {}> {
     this.props.sendServerCommand({commandName: 'CopyArticle', id: article.id});
   }
 
+  onDelete = (article: Article) => {
+    this.props.sendServerCommand({commandName: 'DeleteArticle', id: article.id});
+  }
+
   render() {
     const {syncedState} = this.props;
     return (
@@ -47,7 +51,10 @@ class App extends React.Component<AppProps, {}> {
                     <tr key={article.id}>
                       <td>{article.displayName}</td>
                       <td>{article.builtIn ? 'yes' : ''}</td>
-                      <td><button onClick={() => this.onCopy(article)}>Copy</button></td>
+                      <td>
+                        <button onClick={() => this.onCopy(article)}>Copy</button>
+                        <button onClick={() => this.onDelete(article)}>Delete</button>
+                      </td>
                     </tr>))
                 }
                 </tbody>

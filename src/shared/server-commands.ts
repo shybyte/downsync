@@ -14,5 +14,10 @@ interface CopyArticleCommand {
   id: ArticleId;
 }
 
+interface DeleteArticleCommand {
+  commandName: 'DeleteArticle';
+  id: ArticleId;
+}
 
-export type ServerCommand = ChangeNameCommand | IncreaseCountCommand | CopyArticleCommand;
+
+export type ServerCommand = ChangeNameCommand | IncreaseCountCommand | CopyArticleCommand | DeleteArticleCommand;
