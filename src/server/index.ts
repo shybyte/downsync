@@ -5,7 +5,7 @@ import {ClientCommand} from '../shared/client-commands';
 import {Article, ArticleId, canBeDeleted} from '../shared/article';
 import {SyncedState} from '../shared/synced-state';
 import {ServerCommand} from '../shared/server-commands';
-import {assertUnreachable, hasId} from './utils';
+import {assertUnreachable, hasId} from '../shared/utils';
 import * as R from 'ramda';
 import * as shortid from 'shortid';
 

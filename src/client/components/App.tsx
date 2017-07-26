@@ -2,7 +2,10 @@ import * as React from 'react';
 import './App.css';
 import {SyncedState} from '../../shared/synced-state';
 import {ServerCommand} from '../../shared/server-commands';
-import {Article, canBeDeleted} from '../../shared/article';
+import ArticlesPage from './articles/ArticlesPage';
+import {Route, Switch} from 'react-router';
+import ArticlePage from './article/ArticlePage';
+import {NavLink} from 'react-router-dom';
 
 const logo = require('./logo.svg');
 
@@ -16,54 +19,48 @@ class App extends React.Component<AppProps, {}> {
     this.props.sendServerCommand({commandName: 'IncreaseCount'});
   }
 
-  onCopy = (article: Article) => {
-    this.props.sendServerCommand({commandName: 'CopyArticle', id: article.id});
-  }
-
-  onDelete = (article: Article) => {
-    this.props.sendServerCommand({commandName: 'DeleteArticle', id: article.id});
-  }
-
   render() {
-    const {syncedState} = this.props;
+    const renderWhenSynced = (syncedState: SyncedState) => {
+      return (
+        <div>
+          <p>Name: {syncedState.name}</p>
+          <p>Count: {syncedState.count}</p>
+          <button onClick={this.increase}>+</button>
+          <Switch>
+            <Route
+              path="/article/:articleId"
+              render={(routeProps) =>
+                <ArticlePage
+                  sendServerCommand={this.props.sendServerCommand}
+                  syncedState={syncedState}
+                  articleId={routeProps.match.params.articleId}
+                />
+              }
+            />
+            <Route
+              path="/"
+              render={() =>
+                <ArticlesPage
+                  sendServerCommand={this.props.sendServerCommand}
+                  syncedState={syncedState}
+                />
+              }
+            />
+          </Switch>
+        </div>);
+    };
+
     return (
       <div className="App">
         <div className="App-header">
           <img src={logo} className="App-logo" alt="logo"/>
           <h2>Welcome to DownSync!</h2>
+          <NavLink to="/" exact>Home</NavLink>
         </div>
         <div className="App-intro">
-          {syncedState ?
-            <div>
-              <p>Name: {syncedState.name}</p>
-              <p>Count: {syncedState.count}</p>
-              <button onClick={this.increase}>+</button>
-              <table>
-                <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>BuiltIn</th>
-                  <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {
-                  syncedState.articles.map(article => (
-                    <tr key={article.id}>
-                      <td>{article.displayName}</td>
-                      <td>{article.builtIn ? 'yes' : ''}</td>
-                      <td>
-                        <button onClick={() => this.onCopy(article)}>Copy</button>
-                        <button onClick={() => this.onDelete(article)} disabled={!canBeDeleted(article)}>Delete</button>
-                      </td>
-                    </tr>))
-                }
-                </tbody>
-              </table>
-
-            </div> : <div>Loading</div>
+          {this.props.syncedState ? renderWhenSynced(this.props.syncedState)
+            : <div>Loading</div>
           }
-
         </div>
       </div>
     );

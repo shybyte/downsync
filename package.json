@@ -8,11 +8,13 @@
     "@types/ramda": "^0.24.5",
     "@types/react": "^15.0.39",
     "@types/react-dom": "^15.5.1",
+    "@types/react-router-dom": "^4.0.7",
     "@types/shortid": "0.0.29",
     "express": "^4.15.3",
     "ramda": "^0.24.1",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
+    "react-router-dom": "^4.1.2",
     "shortid": "^2.2.8",
     "socket.io": "^2.0.3"
   },

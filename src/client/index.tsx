@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+import {BrowserRouter} from 'react-router-dom';
 import App from './components/App';
 import registerServiceWorker from './registerServiceWorker';
 import './index.css';
@@ -18,7 +19,10 @@ function sendServerCommand(command: ServerCommand) {
 
 function render() {
   ReactDOM.render(
-    <App syncedState={syncedState} sendServerCommand={sendServerCommand}/>,
+    <BrowserRouter>
+      <App syncedState={syncedState} sendServerCommand={sendServerCommand}/>
+    </BrowserRouter>
+    ,
     document.getElementById('root') as HTMLElement
   );
 }
