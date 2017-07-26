@@ -2,7 +2,8 @@ import * as express from 'express';
 import * as ioStatic from 'socket.io';
 import * as http from 'http';
 import {ClientCommand} from '../shared/client-commands';
-import {Article, ArticleId, SyncedState} from '../shared/synced-state';
+import {Article, ArticleId, canBeDeleted} from '../shared/article';
+import {SyncedState} from '../shared/synced-state';
 import {ServerCommand} from '../shared/server-commands';
 import {assertUnreachable, hasId} from './utils';
 import * as R from 'ramda';
@@ -57,8 +58,8 @@ io.on('connection', socket => {
         });
         break;
       case 'DeleteArticle':
-        doWithArticle(command.id,(article) => {
-          if (!article.builtIn) {
+        doWithArticle(command.id, (article) => {
+          if (canBeDeleted(article)) {
             syncedState.articles = R.reject(hasId(article.id), syncedState.articles);
           }
         });

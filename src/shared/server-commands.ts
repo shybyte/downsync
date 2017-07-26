@@ -1,4 +1,4 @@
-import {ArticleId} from './synced-state';
+import {ArticleId} from './article';
 
 interface ChangeNameCommand {
   commandName: 'ChangeName';

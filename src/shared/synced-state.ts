@@ -1,11 +1,4 @@
-export type ArticleId = string;
-
-export interface Article {
-  id: ArticleId;
-  displayName: string;
-  builtIn: boolean;
-}
-
+import {Article} from './article';
 
 export interface SyncedState {
   name: string;

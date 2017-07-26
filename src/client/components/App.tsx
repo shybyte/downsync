@@ -1,7 +1,8 @@
 import * as React from 'react';
 import './App.css';
-import {Article, SyncedState} from '../../shared/synced-state';
+import {SyncedState} from '../../shared/synced-state';
 import {ServerCommand} from '../../shared/server-commands';
+import {Article, canBeDeleted} from '../../shared/article';
 
 const logo = require('./logo.svg');
 
@@ -53,7 +54,7 @@ class App extends React.Component<AppProps, {}> {
                       <td>{article.builtIn ? 'yes' : ''}</td>
                       <td>
                         <button onClick={() => this.onCopy(article)}>Copy</button>
-                        <button onClick={() => this.onDelete(article)}>Delete</button>
+                        <button onClick={() => this.onDelete(article)} disabled={!canBeDeleted(article)}>Delete</button>
                       </td>
                     </tr>))
                 }
