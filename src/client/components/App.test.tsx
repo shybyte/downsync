@@ -7,7 +7,12 @@ it('renders without crashing', () => {
   const div = document.createElement('div');
   const syncedState = {
     name: 'TestName',
-    count: 123
+    count: 123,
+    articles: [{
+      id: 'dummyId',
+      displayName: 'Article 1',
+      builtIn: true
+    }]
   };
 
   function sendServerCommand(command: ServerCommand) {

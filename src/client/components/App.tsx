@@ -1,6 +1,6 @@
 import * as React from 'react';
 import './App.css';
-import {SyncedState} from '../../shared/synced-state';
+import {Article, SyncedState} from '../../shared/synced-state';
 import {ServerCommand} from '../../shared/server-commands';
 
 const logo = require('./logo.svg');
@@ -13,6 +13,10 @@ interface AppProps {
 class App extends React.Component<AppProps, {}> {
   increase = () => {
     this.props.sendServerCommand({commandName: 'IncreaseCount'});
+  }
+
+  onCopy = (article: Article) => {
+    this.props.sendServerCommand({commandName: 'CopyArticle', id: article.id});
   }
 
   render() {
@@ -29,6 +33,26 @@ class App extends React.Component<AppProps, {}> {
               <p>Name: {syncedState.name}</p>
               <p>Count: {syncedState.count}</p>
               <button onClick={this.increase}>+</button>
+              <table>
+                <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>BuiltIn</th>
+                  <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {
+                  syncedState.articles.map(article => (
+                    <tr key={article.id}>
+                      <td>{article.displayName}</td>
+                      <td>{article.builtIn ? 'yes' : ''}</td>
+                      <td><button onClick={() => this.onCopy(article)}>Copy</button></td>
+                    </tr>))
+                }
+                </tbody>
+              </table>
+
             </div> : <div>Loading</div>
           }
 

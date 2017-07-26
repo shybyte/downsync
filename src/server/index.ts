@@ -3,8 +3,10 @@ import * as ioStatic from 'socket.io';
 import * as http from 'http';
 import {ClientCommand} from '../shared/client-commands';
 import {SyncedState} from '../shared/synced-state';
-import {ServerCommand} from "../shared/server-commands";
-import {assertUnreachable} from "./utils";
+import {ServerCommand} from '../shared/server-commands';
+import {assertUnreachable} from './utils';
+import * as R from 'ramda';
+import * as shortid from 'shortid';
 
 const app = express();
 const server = http.createServer(app);
@@ -12,7 +14,12 @@ const io = ioStatic(server);
 
 const syncedState: SyncedState = {
   name: 'Marco',
-  count: 0
+  count: 0,
+  articles: [{
+    id: 'dummyId',
+    displayName: 'Article 1',
+    builtIn: true
+  }]
 };
 
 io.on('connection', socket => {
@@ -30,6 +37,16 @@ io.on('connection', socket => {
         break;
       case 'ChangeName':
         syncedState.name = command.name;
+        break;
+      case 'CopyArticle':
+        const article = syncedState.articles.find((a) => a.id === command.id);
+        if (article) {
+          const clone = R.clone(article);
+          clone.id = shortid.generate();
+          clone.displayName = article.displayName + ' (Copy)';
+          clone.builtIn = false;
+          syncedState.articles.push(clone);
+        }
         break;
       default:
         assertUnreachable(command);
