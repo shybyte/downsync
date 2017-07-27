@@ -8,11 +8,8 @@ import * as io from 'socket.io-client';
 import {SyncedState} from '../shared/synced-state';
 import {ClientCommand} from '../shared/client-commands';
 import {ServerCommand} from '../shared/server-commands';
-
-import {DiffPatcher} from 'jsondiffpatch';
 import {assertUnreachable} from '../shared/utils';
-
-const diffPatcher = new DiffPatcher({});
+import {patch} from '../shared/json-diff-patch';
 
 let syncedState: SyncedState;
 const socket = io('http://localhost:8000');
@@ -42,7 +39,7 @@ socket.on('command', (clientCommand: ClientCommand) => {
       syncedState = clientCommand.state;
       break;
     case 'SyncStatePatch':
-      syncedState = diffPatcher.patch(syncedState, clientCommand.statePatch);
+      syncedState = patch(syncedState, clientCommand.statePatch);
       console.log('new state', syncedState);
       break;
     default:

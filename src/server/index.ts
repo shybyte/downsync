@@ -8,10 +8,8 @@ import {ServerCommand} from '../shared/server-commands';
 import {assertUnreachable, hasId} from '../shared/utils';
 import * as R from 'ramda';
 import * as shortid from 'shortid';
-import {DiffPatcher} from 'jsondiffpatch';
+import {diff} from '../shared/json-diff-patch';
 import deepFreezeStrict = require('deep-freeze-strict');
-
-const diffPatcher = new DiffPatcher({});
 
 
 const app = express();
@@ -81,7 +79,7 @@ io.on('connection', socket => {
         assertUnreachable(command);
     }
 
-    const statePatch = diffPatcher.diff(syncedState, newSyncedState);
+    const statePatch = diff(syncedState, newSyncedState);
     sendCommand({commandName: 'SyncStatePatch', statePatch: statePatch!});
 
     syncedState = deepFreezeStrict(newSyncedState);
