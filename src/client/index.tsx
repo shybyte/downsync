@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import {BrowserRouter} from 'react-router-dom';
+import {Route, Switch} from 'react-router';
 import App from './components/App';
 import registerServiceWorker from './registerServiceWorker';
 import './index.css';
@@ -10,9 +11,10 @@ import {ClientCommand} from '../shared/client-commands';
 import {ServerCommand} from '../shared/server-commands';
 import {assertUnreachable} from '../shared/utils';
 import {patch} from '../shared/json-diff-patch';
+import GodModePage from "../god-mode/client/GodModePage";
 
 let syncedState: SyncedState;
-const socket = io('http://localhost:8000');
+const socket: SocketIOClient.Socket = io('http://localhost:8000');
 
 function sendServerCommand(command: ServerCommand) {
   socket.emit('command', command);
@@ -22,7 +24,20 @@ function sendServerCommand(command: ServerCommand) {
 function render() {
   ReactDOM.render(
     <BrowserRouter>
-      <App syncedState={syncedState} sendServerCommand={sendServerCommand}/>
+      <Switch>
+        <Route
+          path="/god-mode"
+          render={() =>
+            <GodModePage syncedState={syncedState} socket={socket}/>
+          }
+        />
+        <Route
+          path="/"
+          render={() =>
+            <App syncedState={syncedState} sendServerCommand={sendServerCommand}/>
+          }
+        />
+      </Switch>
     </BrowserRouter>
     ,
     document.getElementById('root') as HTMLElement

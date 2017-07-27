@@ -8,7 +8,9 @@ import {ServerCommand} from '../shared/server-commands';
 import {assertUnreachable, hasId} from '../shared/utils';
 import * as R from 'ramda';
 import * as shortid from 'shortid';
-import {diff} from '../shared/json-diff-patch';
+import {diff, unpatch} from '../shared/json-diff-patch';
+import {GodModeServerCommand} from "../god-mode/shared/god-mode-commands";
+import {Delta} from "jsondiffpatch";
 import deepFreezeStrict = require('deep-freeze-strict');
 
 
@@ -24,6 +26,8 @@ let syncedState: SyncedState = deepFreezeStrict({
     builtIn: true
   }]
 });
+
+const patchHistory: Delta[] = [];
 
 
 function doWithArticle(localSyncedState: SyncedState, articleId: ArticleId, action: (article: Article) => void) {
@@ -80,8 +84,26 @@ io.on('connection', socket => {
 
     const statePatch = diff(syncedState, newSyncedState);
     sendCommand({commandName: 'SyncStatePatch', statePatch: statePatch!});
+    patchHistory.push(statePatch);
 
     syncedState = deepFreezeStrict(newSyncedState);
+  });
+
+  socket.on('godCommand', (godCommand: GodModeServerCommand) => {
+    console.log('godCommand', godCommand);
+    switch (godCommand.commandName) {
+      case 'undo':
+        const lastPatch = patchHistory.pop();
+        if (lastPatch) {
+          console.log('undo', lastPatch);
+          const stateClone = R.clone(syncedState);
+          syncedState = deepFreezeStrict(unpatch(stateClone, lastPatch));
+          syncCompleteState();
+        }
+        break;
+      default:
+        console.error('unknown godCommand', godCommand);
+    }
   });
 
   syncCompleteState();

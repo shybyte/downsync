@@ -9,3 +9,7 @@ export function diff<T>(original: T, mofified: T): Delta {
 export function patch<T>(original: T, delta: Delta): T {
   return diffPatcher.patch(original, delta)!;
 }
+
+export function unpatch<T>(original: T, delta: Delta): T {
+  return patch(original, diffPatcher.reverse(delta)!);
+}
