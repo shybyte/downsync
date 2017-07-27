@@ -54,9 +54,6 @@ io.on('connection', socket => {
       case 'IncreaseCount':
         newSyncedState.count += 1;
         break;
-      case 'ChangeName':
-        newSyncedState.name = command.name;
-        break;
       case 'CopyArticle':
         doWithArticle(newSyncedState, command.id, (article) => {
           const clone = R.clone(article);

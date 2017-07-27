@@ -1,10 +1,5 @@
 import {ArticleId} from './article';
 
-interface ChangeNameCommand {
-  commandName: 'ChangeName';
-  name: string;
-}
-
 interface IncreaseCountCommand {
   commandName: 'IncreaseCount';
 }
@@ -27,7 +22,6 @@ interface DeleteArticleCommand {
 
 
 export type ServerCommand =
-  ChangeNameCommand
   | IncreaseCountCommand
   | CopyArticleCommand
   | DeleteArticleCommand

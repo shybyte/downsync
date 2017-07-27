@@ -23,7 +23,6 @@ class App extends React.Component<AppProps, {}> {
     const renderWhenSynced = (syncedState: SyncedState) => {
       return (
         <div>
-          <p>Name: {syncedState.name}</p>
           <p>Count: {syncedState.count}</p>
           <button onClick={this.increase}>+</button>
           <Switch>
