@@ -17,7 +17,6 @@ const server = http.createServer(app);
 const io = ioStatic(server);
 
 let syncedState: SyncedState = deepFreezeStrict({
-  name: 'Marco',
   count: 0,
   articles: [{
     id: 'dummyId',
