@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@types/deep-freeze-strict": "^1.1.0",
     "@types/jest": "^20.0.4",
     "@types/node": "^8.0.16",
     "@types/ramda": "^0.24.5",
@@ -10,7 +11,9 @@
     "@types/react-dom": "^15.5.1",
     "@types/react-router-dom": "^4.0.7",
     "@types/shortid": "0.0.29",
+    "deep-freeze-strict": "^1.1.1",
     "express": "^4.15.3",
+    "jsondiffpatch": "git+https://git@github.com/benjamine/jsondiffpatch.git#0e078a731224e5a18e3118d5a3c8ed179d4c8a77",
     "ramda": "^0.24.1",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",

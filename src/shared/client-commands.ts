@@ -1,8 +1,14 @@
-import { SyncedState } from './synced-state';
+import {SyncedState} from './synced-state';
+import {Delta} from 'jsondiffpatch';
 
 interface SyncCompleteStateCommand {
   commandName: 'SyncCompleteState';
   state: SyncedState;
 }
 
-export type ClientCommand = SyncCompleteStateCommand;
+interface SyncStatePatchCommand {
+  commandName: 'SyncStatePatch';
+  statePatch: Delta;
+}
+
+export type ClientCommand = SyncCompleteStateCommand | SyncStatePatchCommand;

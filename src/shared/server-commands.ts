@@ -17,7 +17,7 @@ interface CopyArticleCommand {
 interface RenameArticleCommand {
   commandName: 'RenameArticle';
   id: ArticleId;
-  displayName: string
+  displayName: string;
 }
 
 interface DeleteArticleCommand {
@@ -26,4 +26,9 @@ interface DeleteArticleCommand {
 }
 
 
-export type ServerCommand = ChangeNameCommand | IncreaseCountCommand | CopyArticleCommand | DeleteArticleCommand | RenameArticleCommand;
+export type ServerCommand =
+  ChangeNameCommand
+  | IncreaseCountCommand
+  | CopyArticleCommand
+  | DeleteArticleCommand
+  | RenameArticleCommand;

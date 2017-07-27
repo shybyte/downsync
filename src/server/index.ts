@@ -8,12 +8,17 @@ import {ServerCommand} from '../shared/server-commands';
 import {assertUnreachable, hasId} from '../shared/utils';
 import * as R from 'ramda';
 import * as shortid from 'shortid';
+import {DiffPatcher} from 'jsondiffpatch';
+import deepFreezeStrict = require('deep-freeze-strict');
+
+const diffPatcher = new DiffPatcher({});
+
 
 const app = express();
 const server = http.createServer(app);
 const io = ioStatic(server);
 
-const syncedState: SyncedState = {
+let syncedState: SyncedState = deepFreezeStrict({
   name: 'Marco',
   count: 0,
   articles: [{
@@ -21,53 +26,57 @@ const syncedState: SyncedState = {
     displayName: 'Article 1',
     builtIn: true
   }]
-};
+});
 
 
-function doWithArticle(articleId: ArticleId, action: (article: Article) => void) {
-  const article = syncedState.articles.find(hasId(articleId));
+function doWithArticle(localSyncedState: SyncedState, articleId: ArticleId, action: (article: Article) => void) {
+  const article = localSyncedState.articles.find(hasId(articleId));
   if (article) {
     action(article);
   }
+}
+
+function sendCommand(clientCommand: ClientCommand) {
+  io.emit('command', clientCommand);
 }
 
 
 io.on('connection', socket => {
   console.log('a user connected');
 
-  function syncState() {
+  function syncCompleteState() {
     sendCommand({commandName: 'SyncCompleteState', state: syncedState});
   }
 
-
   socket.on('command', (command: ServerCommand) => {
+    const newSyncedState = R.clone(syncedState);
     switch (command.commandName) {
       case 'IncreaseCount':
-        syncedState.count += 1;
+        newSyncedState.count += 1;
         break;
       case 'ChangeName':
-        syncedState.name = command.name;
+        newSyncedState.name = command.name;
         break;
       case 'CopyArticle':
-        doWithArticle(command.id, (article) => {
+        doWithArticle(newSyncedState, command.id, (article) => {
           const clone = R.clone(article);
           clone.id = shortid.generate();
           clone.displayName = article.displayName + ' (Copy)';
           clone.builtIn = false;
-          syncedState.articles.push(clone);
+          newSyncedState.articles.push(clone);
         });
         break;
       case 'RenameArticle':
-        doWithArticle(command.id, (article) => {
+        doWithArticle(newSyncedState, command.id, (article) => {
           if (!article.builtIn) {
             article.displayName = command.displayName;
           }
         });
         break;
       case 'DeleteArticle':
-        doWithArticle(command.id, (article) => {
+        doWithArticle(newSyncedState, command.id, (article) => {
           if (canBeDeleted(article)) {
-            syncedState.articles = R.reject(hasId(article.id), syncedState.articles);
+            newSyncedState.articles = R.reject(hasId(article.id), syncedState.articles);
           }
         });
         break;
@@ -75,15 +84,14 @@ io.on('connection', socket => {
         assertUnreachable(command);
     }
 
-    syncState();
+    const statePatch = diffPatcher.diff(syncedState, newSyncedState);
+    sendCommand({commandName: 'SyncStatePatch', statePatch: statePatch!});
+
+    syncedState = deepFreezeStrict(newSyncedState);
   });
 
-  syncState();
+  syncCompleteState();
 });
-
-function sendCommand(clientCommand: ClientCommand) {
-  io.emit('command', clientCommand);
-}
 
 app.get('/', (req, res) => {
   res.send('<h1>Hello world</h1>');

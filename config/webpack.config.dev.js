@@ -100,6 +100,7 @@ module.exports = {
     ],
   },
   module: {
+    exprContextCritical: false,
     strictExportPresence: true,
     rules: [
       // TODO: Disable require.ensure as it's not a standard language feature.
