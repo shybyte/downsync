@@ -33,6 +33,7 @@ class App extends React.Component<AppProps, {}> {
                   sendServerCommand={this.props.sendServerCommand}
                   syncedState={syncedState}
                   articleId={routeProps.match.params.articleId}
+                  routeProps={routeProps}
                 />
               }
             />
