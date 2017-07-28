@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as express from 'express';
 import * as ioStatic from 'socket.io';
 import * as http from 'http';
@@ -18,15 +19,7 @@ const app = express();
 const server = http.createServer(app);
 const io = ioStatic(server);
 
-let syncedState: SyncedState = deepFreezeStrict({
-  count: 0,
-  articles: [{
-    id: 'dummyId',
-    displayName: 'Article 1',
-    comment: 'My comment',
-    builtIn: true
-  }]
-});
+let syncedState: SyncedState = deepFreezeStrict(JSON.parse(fs.readFileSync('data/state.json', 'utf8')));
 
 const patchHistory: Delta[] = [];
 
