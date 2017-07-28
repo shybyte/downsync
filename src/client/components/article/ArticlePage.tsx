@@ -17,17 +17,6 @@ interface ArticlePageProps {
 }
 
 class ArticlePage extends React.Component<ArticlePageProps, {}> {
-  inputElement: HTMLInputElement;
-
-  onSubmit = (ev: React.FormEvent<any>) => {
-    ev.preventDefault();
-    this.props.sendServerCommand({
-      commandName: 'RenameArticle',
-      id: this.props.articleId,
-      displayName: this.inputElement.value
-    });
-  }
-
   render() {
     const {sendServerCommand, syncedState, articleId, routeProps} = this.props;
     const article = syncedState.articles.find(hasId(articleId));
