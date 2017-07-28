@@ -33,6 +33,7 @@ class ArticleGeneralTab extends React.Component<ArticleGeneralTabProps, {}> {
           <div>
             <input
               defaultValue={article.displayName}
+              autoFocus={!article.builtIn}
               disabled={article.builtIn}
               ref={(el) => this.inputElement = el!}
             />
@@ -40,6 +41,7 @@ class ArticleGeneralTab extends React.Component<ArticleGeneralTabProps, {}> {
           <div>
             <textarea
               defaultValue={article.comment}
+              autoFocus={article.builtIn}
               ref={(el) => this.commentTextAreaElement = el!}
             />
           </div>
