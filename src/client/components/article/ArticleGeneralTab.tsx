@@ -15,9 +15,6 @@ interface State {
 
 
 class ArticleGeneralTab extends React.Component<ArticleGeneralTabProps, State> {
-  inputElement: HTMLInputElement;
-  commentTextAreaElement: HTMLTextAreaElement;
-
   constructor(props: ArticleGeneralTabProps) {
     super(props);
     this.state = {
@@ -26,22 +23,20 @@ class ArticleGeneralTab extends React.Component<ArticleGeneralTabProps, State> {
     };
   }
 
-
   onDisplayNameChange = (ev: React.SyntheticEvent<HTMLInputElement>) => {
-    this.setState({displayName: ev.currentTarget.value});
+    this.setState({displayName: ev.currentTarget.value.trim()});
   }
 
   onCommentChange = (ev: React.SyntheticEvent<HTMLTextAreaElement>) => {
-    this.setState({comment: ev.currentTarget.value});
+    this.setState({comment: ev.currentTarget.value.trim()});
   }
 
   onSubmit = (ev: React.FormEvent<any>) => {
     ev.preventDefault();
     this.props.sendServerCommand({
+      ...this.state,
       commandName: 'SaveArticle',
       id: this.props.article.id,
-      displayName: this.inputElement.value,
-      comment: this.commentTextAreaElement.value
     });
   }
 
@@ -64,7 +59,6 @@ class ArticleGeneralTab extends React.Component<ArticleGeneralTabProps, State> {
               autoFocus={!article.builtIn}
               disabled={article.builtIn}
               onChange={this.onDisplayNameChange}
-              ref={(el) => this.inputElement = el!}
             />
           </div>
           <div>
@@ -72,7 +66,6 @@ class ArticleGeneralTab extends React.Component<ArticleGeneralTabProps, State> {
               defaultValue={article.comment}
               autoFocus={article.builtIn}
               onChange={this.onCommentChange}
-              ref={(el) => this.commentTextAreaElement = el!}
             />
           </div>
           <button
