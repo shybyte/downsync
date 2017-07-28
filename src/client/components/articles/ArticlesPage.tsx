@@ -3,6 +3,7 @@ import {SyncedState} from '../../../shared/synced-state';
 import {ServerCommand} from '../../../shared/server-commands';
 import {Article, canBeDeleted} from '../../../shared/article';
 import {Link} from 'react-router-dom';
+import * as R from 'ramda';
 
 
 interface ArticlesPageProps {
@@ -21,6 +22,7 @@ class ArticlesPage extends React.Component<ArticlesPageProps, {}> {
 
   render() {
     const {syncedState} = this.props;
+    const sortedArticles = R.sortBy(a => a.displayName.toLowerCase(), syncedState.articles);
     return (
       <div>
         <table>
@@ -33,7 +35,7 @@ class ArticlesPage extends React.Component<ArticlesPageProps, {}> {
           </thead>
           <tbody>
           {
-            syncedState.articles.map(article => (
+            sortedArticles.map(article => (
               <tr key={article.id}>
                 <td><Link to={`article/${article.id}`}>{article.displayName}</Link></td>
                 <td>{article.builtIn ? 'yes' : ''}</td>
