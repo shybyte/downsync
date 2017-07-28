@@ -11,6 +11,7 @@ it('renders without crashing', () => {
     articles: [{
       id: 'dummyId',
       displayName: 'Article 1',
+      comment: 'My comment',
       builtIn: true
     }]
   };

@@ -9,10 +9,11 @@ interface CopyArticleCommand {
   id: ArticleId;
 }
 
-interface RenameArticleCommand {
-  commandName: 'RenameArticle';
+interface SaveArticleCommand {
+  commandName: 'SaveArticle';
   id: ArticleId;
   displayName: string;
+  comment: string;
 }
 
 interface DeleteArticleCommand {
@@ -25,4 +26,4 @@ export type ServerCommand =
   | IncreaseCountCommand
   | CopyArticleCommand
   | DeleteArticleCommand
-  | RenameArticleCommand;
+  | SaveArticleCommand;

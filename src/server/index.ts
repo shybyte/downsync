@@ -23,6 +23,7 @@ let syncedState: SyncedState = deepFreezeStrict({
   articles: [{
     id: 'dummyId',
     displayName: 'Article 1',
+    comment: 'My comment',
     builtIn: true
   }]
 });
@@ -50,6 +51,7 @@ io.on('connection', socket => {
   }
 
   socket.on('command', (command: ServerCommand) => {
+    console.log('Got command', command);
     const newSyncedState = R.clone(syncedState);
     switch (command.commandName) {
       case 'IncreaseCount':
@@ -64,11 +66,12 @@ io.on('connection', socket => {
           newSyncedState.articles.push(clone);
         });
         break;
-      case 'RenameArticle':
+      case 'SaveArticle':
         doWithArticle(newSyncedState, command.id, (article) => {
           if (!article.builtIn) {
             article.displayName = command.displayName;
           }
+          article.comment = command.comment;
         });
         break;
       case 'DeleteArticle':

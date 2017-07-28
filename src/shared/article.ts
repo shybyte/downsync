@@ -3,6 +3,7 @@ export type ArticleId = string;
 export interface Article {
   id: ArticleId;
   displayName: string;
+  comment: string;
   builtIn: boolean;
 }
 

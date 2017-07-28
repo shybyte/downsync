@@ -10,13 +10,15 @@ interface ArticleGeneralTabProps {
 
 class ArticleGeneralTab extends React.Component<ArticleGeneralTabProps, {}> {
   inputElement: HTMLInputElement;
+  commentTextAreaElement: HTMLTextAreaElement;
 
   onSubmit = (ev: React.FormEvent<any>) => {
     ev.preventDefault();
     this.props.sendServerCommand({
-      commandName: 'RenameArticle',
+      commandName: 'SaveArticle',
       id: this.props.article.id,
-      displayName: this.inputElement.value
+      displayName: this.inputElement.value,
+      comment: this.commentTextAreaElement.value
     });
   }
 
@@ -28,11 +30,19 @@ class ArticleGeneralTab extends React.Component<ArticleGeneralTabProps, {}> {
           action="#"
           onSubmit={this.onSubmit}
         >
-          <input
-            defaultValue={article.displayName}
-            disabled={article.builtIn}
-            ref={(el) => this.inputElement = el!}
-          />
+          <div>
+            <input
+              defaultValue={article.displayName}
+              disabled={article.builtIn}
+              ref={(el) => this.inputElement = el!}
+            />
+          </div>
+          <div>
+            <textarea
+              defaultValue={article.comment}
+              ref={(el) => this.commentTextAreaElement = el!}
+            />
+          </div>
           <button>Save</button>
         </form>
       </div>
