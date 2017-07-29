@@ -3,7 +3,7 @@ import * as express from 'express';
 import * as ioStatic from 'socket.io';
 import * as http from 'http';
 import {ClientCommand} from '../shared/client-commands';
-import {Article, ArticleId, canBeDeleted} from '../shared/article';
+import {Article, ArticleId, canBeDeleted, sanitizeArticleDisplayName, validateDisplayName} from '../shared/article';
 import {SyncedState} from '../shared/synced-state';
 import {ServerCommand} from '../shared/server-commands';
 import {assertUnreachable, hasId} from '../shared/utils';
@@ -54,7 +54,11 @@ io.on('connection', socket => {
         doWithArticle(newSyncedState, command.id, (article) => {
           const clone = R.clone(article);
           clone.id = shortid.generate();
-          clone.displayName = article.displayName + ' (Copy)';
+          const newDisplayNameProposal = article.displayName + ' (Copy)';
+          const existNewDisplayNameAlready = syncedState.articles.some(a => a.displayName === newDisplayNameProposal);
+          clone.displayName = existNewDisplayNameAlready ?
+            (newDisplayNameProposal + ' ' + clone.id)
+            : newDisplayNameProposal;
           clone.builtIn = false;
           newSyncedState.articles.push(clone);
         });
@@ -62,7 +66,13 @@ io.on('connection', socket => {
       case 'SaveArticle':
         doWithArticle(newSyncedState, command.id, (article) => {
           if (!article.builtIn) {
-            article.displayName = command.displayName;
+            const newDisplayName = sanitizeArticleDisplayName(command.displayName);
+            const validationError = validateDisplayName(syncedState.articles, article.id, newDisplayName);
+            if (validationError) {
+              console.error('Error in SaveArticle:', command, validationError);
+              return;
+            }
+            article.displayName = newDisplayName;
           }
           article.comment = command.comment;
         });

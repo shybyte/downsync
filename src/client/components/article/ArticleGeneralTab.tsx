@@ -1,15 +1,17 @@
 import * as React from 'react';
 import {ServerCommand} from '../../../shared/server-commands';
-import {Article} from '../../../shared/article';
+import {Article, sanitizeArticleDisplayName, validateDisplayName} from '../../../shared/article';
 
 
 interface ArticleGeneralTabProps {
   sendServerCommand: (command: ServerCommand) => void;
+  articles: Article[];
   article: Article;
 }
 
 interface State {
   displayName: string;
+  displayNameError?: string;
   comment: string;
 }
 
@@ -24,7 +26,11 @@ class ArticleGeneralTab extends React.Component<ArticleGeneralTabProps, State> {
   }
 
   onDisplayNameChange = (ev: React.SyntheticEvent<HTMLInputElement>) => {
-    this.setState({displayName: ev.currentTarget.value.trim()});
+    const displayName = sanitizeArticleDisplayName(ev.currentTarget.value);
+    this.setState({
+      displayName: displayName,
+      displayNameError: validateDisplayName(this.props.articles, this.props.article.id, displayName)
+    });
   }
 
   onCommentChange = (ev: React.SyntheticEvent<HTMLTextAreaElement>) => {
@@ -34,15 +40,17 @@ class ArticleGeneralTab extends React.Component<ArticleGeneralTabProps, State> {
   onSubmit = (ev: React.FormEvent<any>) => {
     ev.preventDefault();
     this.props.sendServerCommand({
-      ...this.state,
       commandName: 'SaveArticle',
       id: this.props.article.id,
+      displayName: this.state.displayName,
+      comment: this.state.comment,
     });
   }
 
   canSave() {
-    return this.props.article.comment !== this.state.comment ||
+    const hasSomethingChanged = this.props.article.comment !== this.state.comment ||
       this.props.article.displayName !== this.state.displayName;
+    return hasSomethingChanged && !this.state.displayNameError;
   }
 
   render() {
@@ -54,12 +62,15 @@ class ArticleGeneralTab extends React.Component<ArticleGeneralTabProps, State> {
           onSubmit={this.onSubmit}
         >
           <div>
-            <input
-              defaultValue={article.displayName}
-              autoFocus={!article.builtIn}
-              disabled={article.builtIn}
-              onChange={this.onDisplayNameChange}
-            />
+            <div>
+              <input
+                defaultValue={article.displayName}
+                autoFocus={!article.builtIn}
+                disabled={article.builtIn}
+                onChange={this.onDisplayNameChange}
+              />
+              {this.state.displayNameError && <div>{this.state.displayNameError}</div>}
+            </div>
           </div>
           <div>
             <textarea

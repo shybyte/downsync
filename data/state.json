@@ -12,6 +12,12 @@
       "displayName": "Article 2",
       "comment": "My comment 2",
       "builtIn": false
+    },
+    {
+      "id": "dummyId3",
+      "displayName": "Article 3",
+      "comment": "My comment 3",
+      "builtIn": false
     }
   ]
 }

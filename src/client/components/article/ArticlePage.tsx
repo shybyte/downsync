@@ -39,7 +39,11 @@ class ArticlePage extends React.Component<ArticlePageProps, {}> {
           <Route
             path={routeProps.match.url}
             render={() =>
-              <ArticleGeneralTab sendServerCommand={sendServerCommand} article={article}/>
+              <ArticleGeneralTab
+                sendServerCommand={sendServerCommand}
+                article={article}
+                articles={syncedState.articles}
+              />
             }
           />
         </Switch>
