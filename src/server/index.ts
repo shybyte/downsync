@@ -6,10 +6,11 @@ import {ClientCommand} from '../shared/client-commands';
 import {SyncedState} from '../shared/synced-state';
 import {ServerCommand} from '../shared/server-commands';
 import * as R from 'ramda';
-import {diff, unpatch} from '../shared/json-diff-patch';
+import {diff} from '../shared/json-diff-patch';
 import {GodModeServerCommand} from "../god-mode/shared/god-mode-commands";
 import {Delta} from "jsondiffpatch";
 import {executeServerCommand} from "./execute-server-commands";
+import {executeGodCommand} from "../god-mode/server/execute-god-commands";
 import deepFreezeStrict = require('deep-freeze-strict');
 
 
@@ -27,7 +28,7 @@ function sendCommand(clientCommand: ClientCommand) {
 }
 
 io.on('connection', socket => {
-  console.log('a user connected');
+  console.log('a user connected', socket.id);
 
   function syncCompleteState() {
     sendCommand({commandName: 'SyncCompleteState', state: syncedState});
@@ -45,19 +46,10 @@ io.on('connection', socket => {
   });
 
   socket.on('godCommand', (godCommand: GodModeServerCommand) => {
-    console.log('godCommand', godCommand);
-    switch (godCommand.commandName) {
-      case 'undo':
-        const lastPatch = patchHistory.pop();
-        if (lastPatch) {
-          console.log('undo', lastPatch);
-          const stateClone = R.clone(syncedState);
-          syncedState = deepFreezeStrict(unpatch(stateClone, lastPatch));
-          syncCompleteState();
-        }
-        break;
-      default:
-        console.error('unknown godCommand', godCommand);
+    const godCommandResult = executeGodCommand({syncedState, patchHistory}, godCommand);
+    if (godCommandResult) {
+      syncedState = godCommandResult.syncedState;
+      syncCompleteState();
     }
   });
 
