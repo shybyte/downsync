@@ -3,15 +3,13 @@ import * as express from 'express';
 import * as ioStatic from 'socket.io';
 import * as http from 'http';
 import {ClientCommand} from '../shared/client-commands';
-import {Article, ArticleId, canBeDeleted, sanitizeArticleDisplayName, validateDisplayName} from '../shared/article';
 import {SyncedState} from '../shared/synced-state';
 import {ServerCommand} from '../shared/server-commands';
-import {assertUnreachable, hasId} from '../shared/utils';
 import * as R from 'ramda';
-import * as shortid from 'shortid';
 import {diff, unpatch} from '../shared/json-diff-patch';
 import {GodModeServerCommand} from "../god-mode/shared/god-mode-commands";
 import {Delta} from "jsondiffpatch";
+import {executeServerCommand} from "./execute-server-commands";
 import deepFreezeStrict = require('deep-freeze-strict');
 
 
@@ -24,17 +22,9 @@ let syncedState: SyncedState = deepFreezeStrict(JSON.parse(fs.readFileSync('data
 const patchHistory: Delta[] = [];
 
 
-function doWithArticle(localSyncedState: SyncedState, articleId: ArticleId, action: (article: Article) => void) {
-  const article = localSyncedState.articles.find(hasId(articleId));
-  if (article) {
-    action(article);
-  }
-}
-
 function sendCommand(clientCommand: ClientCommand) {
   io.emit('command', clientCommand);
 }
-
 
 io.on('connection', socket => {
   console.log('a user connected');
@@ -46,48 +36,7 @@ io.on('connection', socket => {
   socket.on('command', (command: ServerCommand) => {
     console.log('Got command', command);
     const newSyncedState = R.clone(syncedState);
-    switch (command.commandName) {
-      case 'IncreaseCount':
-        newSyncedState.count += 1;
-        break;
-      case 'CopyArticle':
-        doWithArticle(newSyncedState, command.id, (article) => {
-          const clone = R.clone(article);
-          clone.id = shortid.generate();
-          const newDisplayNameProposal = article.displayName + ' (Copy)';
-          const existNewDisplayNameAlready = syncedState.articles.some(a => a.displayName === newDisplayNameProposal);
-          clone.displayName = existNewDisplayNameAlready ?
-            (newDisplayNameProposal + ' ' + clone.id)
-            : newDisplayNameProposal;
-          clone.builtIn = false;
-          newSyncedState.articles.push(clone);
-        });
-        break;
-      case 'SaveArticle':
-        doWithArticle(newSyncedState, command.id, (article) => {
-          if (!article.builtIn) {
-            const newDisplayName = sanitizeArticleDisplayName(command.displayName);
-            const validationError = validateDisplayName(syncedState.articles, article.id, newDisplayName);
-            if (validationError) {
-              console.error('Error in SaveArticle:', command, validationError);
-              return;
-            }
-            article.displayName = newDisplayName;
-          }
-          article.comment = command.comment;
-        });
-        break;
-      case 'DeleteArticle':
-        doWithArticle(newSyncedState, command.id, (article) => {
-          if (canBeDeleted(article)) {
-            newSyncedState.articles = R.reject(hasId(article.id), syncedState.articles);
-          }
-        });
-        break;
-      default:
-        assertUnreachable(command);
-    }
-
+    executeServerCommand(newSyncedState, command);
     const statePatch = diff(syncedState, newSyncedState);
     sendCommand({commandName: 'SyncStatePatch', statePatch: statePatch!});
     patchHistory.push(statePatch);

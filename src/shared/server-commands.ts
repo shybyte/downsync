@@ -1,22 +1,22 @@
 import {ArticleId} from './article';
 
-interface IncreaseCountCommand {
+export interface IncreaseCountCommand {
   commandName: 'IncreaseCount';
 }
 
-interface CopyArticleCommand {
+export interface CopyArticleCommand {
   commandName: 'CopyArticle';
   id: ArticleId;
 }
 
-interface SaveArticleCommand {
+export interface SaveArticleCommand {
   commandName: 'SaveArticle';
   id: ArticleId;
   displayName: string;
   comment: string;
 }
 
-interface DeleteArticleCommand {
+export interface DeleteArticleCommand {
   commandName: 'DeleteArticle';
   id: ArticleId;
 }
