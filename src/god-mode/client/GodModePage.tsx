@@ -18,14 +18,26 @@ function sendGodCommand(socket: SocketIOClient.Socket, godCommand: GodModeServer
 
 
 class GodModePage extends React.Component<GodModeProps, PageState> {
-  state: PageState = {
-  };
+  state: PageState = {};
+  oldSocketId: string;
 
   onUndo = () => {
     sendGodCommand(this.props.socket, {commandName: 'undo'});
   }
 
   componentDidMount() {
+    this.subscribeToGodState();
+  }
+
+  componentWillReceiveProps(nextProps: GodModeProps) {
+    console.log('componentWillReceiveProps', this.oldSocketId, nextProps.socket.id);
+    if (this.oldSocketId !== nextProps.socket.id) {
+      this.subscribeToGodState();
+    }
+  }
+
+  subscribeToGodState() {
+    this.oldSocketId = this.props.socket.id;
     sendGodCommand(this.props.socket, {commandName: 'subscribeToGodState'});
     this.props.socket.on(GOD_COMMAND_EVENT_NAME, (command: GodModeClientCommand) => {
       switch (command.commandName) {

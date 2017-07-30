@@ -1,7 +1,7 @@
 import {GOD_COMMAND_EVENT_NAME, GodModeClientCommand, GodModeServerCommand} from "../shared/god-mode-commands";
 import {SyncedState} from "../../shared/synced-state";
 import {Delta} from "jsondiffpatch";
-import {unpatch} from "../../shared/json-diff-patch";
+import {getStateOfRevision, unpatch} from "../../shared/json-diff-patch";
 import * as R from "ramda";
 import {assertUnreachable} from "../../shared/utils";
 import {SocketSession} from "../../server/index";
@@ -12,7 +12,7 @@ interface GodCommandResult {
   syncedState: SyncedState;
 }
 
-interface CurrentState {
+export interface CurrentState {
   syncedState: SyncedState;
   patchHistory: Delta[];
   selectedRevision?: number;
@@ -28,10 +28,11 @@ export function executeGodCommand(io: SocketIO.Server,
   console.log('godCommand', godCommand);
   switch (godCommand.commandName) {
     case 'undo':
-      const lastPatch = state.patchHistory.pop();
-      if (lastPatch) {
+      if (state.patchHistory.length > 1) {
+        const lastPatch = state.patchHistory.pop()!;
         console.log('undo', lastPatch);
         const stateClone = R.clone(state.syncedState);
+        state.selectedRevision = state.patchHistory.length - 1;
         return {
           syncedState: deepFreezeStrict(unpatch(stateClone, lastPatch))
         };
@@ -43,7 +44,6 @@ export function executeGodCommand(io: SocketIO.Server,
       console.log('subscribeToGodState', socket.id);
       state.socketSessions[socket.id].subscribedToGod = true;
       socket.join(GOD_STATE_ROOM);
-      syncGodState(io, state);
       break;
     default:
       console.error('unknown godCommand', godCommand);
@@ -53,15 +53,14 @@ export function executeGodCommand(io: SocketIO.Server,
 }
 
 function selectStateRevision(state: CurrentState, revision: number) {
-  const lastPatch = state.patchHistory[revision];
-  const stateClone = R.clone(state.syncedState);
-  if (lastPatch) {
-    console.log('undo', lastPatch);
-    return {
-      syncedState: deepFreezeStrict(unpatch(stateClone, lastPatch))
-    };
-  }
-  return undefined;
+  console.log(`selectStateRevision ${state.selectedRevision} => ${revision}`);
+  const restoredState = getStateOfRevision(
+    state.syncedState, state.patchHistory,
+    R.defaultTo((state.patchHistory.length - 1), state.selectedRevision), revision);
+  state.selectedRevision = revision;
+  return {
+    syncedState: deepFreezeStrict(restoredState)
+  };
 }
 
 export function syncGodState(io: SocketIO.Server, state: GodState) {
