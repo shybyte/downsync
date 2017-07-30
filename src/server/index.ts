@@ -18,9 +18,14 @@ const app = express();
 const server = http.createServer(app);
 const io = ioStatic(server);
 
-let syncedState: SyncedState = deepFreezeStrict(JSON.parse(fs.readFileSync('data/state.json', 'utf8')));
 
+export interface SocketSession {
+  subscribedToGod?: boolean;
+}
+
+let syncedState: SyncedState = deepFreezeStrict(JSON.parse(fs.readFileSync('data/state.json', 'utf8')));
 const patchHistory: Delta[] = [];
+const socketSessions: { [socketId: string]: SocketSession } = {};
 
 
 function sendCommand(clientCommand: ClientCommand) {
@@ -29,6 +34,7 @@ function sendCommand(clientCommand: ClientCommand) {
 
 io.on('connection', socket => {
   console.log('a user connected', socket.id);
+  socketSessions[socket.id] = {};
 
   function syncCompleteState() {
     sendCommand({commandName: 'SyncCompleteState', state: syncedState});
@@ -46,15 +52,21 @@ io.on('connection', socket => {
   });
 
   socket.on('godCommand', (godCommand: GodModeServerCommand) => {
-    const godCommandResult = executeGodCommand({syncedState, patchHistory}, godCommand);
+    const godCommandResult = executeGodCommand(io, {syncedState, patchHistory, socketSessions}, socket, godCommand);
     if (godCommandResult) {
       syncedState = godCommandResult.syncedState;
       syncCompleteState();
     }
   });
 
+  socket.on('disconnect', () => {
+    console.log('disconnected', socket.id);
+    delete socketSessions[socket.id];
+  });
+
   syncCompleteState();
 });
+
 
 app.get('/', (req, res) => {
   res.send('<h1>Hello world</h1>');
