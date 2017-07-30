@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import App from './App';
 import {ServerCommand} from '../../shared/server-commands';
+import {MemoryRouter} from "react-router";
 
 it('renders without crashing', () => {
   const div = document.createElement('div');
@@ -17,8 +18,11 @@ it('renders without crashing', () => {
   };
 
   function sendServerCommand(command: ServerCommand) {
-   console.log('Got Command', command);
+    console.log('Got Command', command);
   }
 
-  ReactDOM.render(<App syncedState={syncedState} sendServerCommand={sendServerCommand}/>, div);
+  ReactDOM.render(<MemoryRouter>
+    <App syncedState={syncedState}
+         sendServerCommand={sendServerCommand}/>
+  </MemoryRouter>, div);
 });
