@@ -12,6 +12,7 @@ const logo = require('./logo.svg');
 interface AppProps {
   sendServerCommand: (command: ServerCommand) => void;
   syncedState?: SyncedState;
+  startGodMode: () => void;
 }
 
 class App extends React.Component<AppProps, {}> {
@@ -56,6 +57,15 @@ class App extends React.Component<AppProps, {}> {
           <img src={logo} className="App-logo" alt="logo"/>
           <h2>Welcome to DownSync!</h2>
           <NavLink to="/" exact={true}>Home</NavLink>
+          <a
+            href="#"
+            onClick={(ev) => {
+              ev.preventDefault();
+              this.props.startGodMode();
+            }}
+          >
+            GodMode
+          </a>
         </div>
         <div className="App-intro">
           {this.props.syncedState ? renderWhenSynced(this.props.syncedState)

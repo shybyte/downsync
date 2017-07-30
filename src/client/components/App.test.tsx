@@ -21,8 +21,20 @@ it('renders without crashing', () => {
     console.log('Got Command', command);
   }
 
-  ReactDOM.render(<MemoryRouter>
-    <App syncedState={syncedState}
-         sendServerCommand={sendServerCommand}/>
-  </MemoryRouter>, div);
+  function startGodMode() {
+    // just a dummy
+  }
+
+  ReactDOM.render(
+    (
+      <MemoryRouter>
+        <App
+          syncedState={syncedState}
+          sendServerCommand={sendServerCommand}
+          startGodMode={startGodMode}
+        />
+      </MemoryRouter>
+    ),
+    div
+  );
 });
