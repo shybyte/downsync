@@ -8,7 +8,7 @@ interface TestState {
   b: number;
 }
 
-function testState(a = 0, b = 0): TestState {
+function testState(a: number = 0, b: number = 0): TestState {
   return deepFreezeStrict({a, b});
 }
 
