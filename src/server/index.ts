@@ -10,7 +10,7 @@ import {diff} from '../shared/json-diff-patch';
 import {GodModeServerCommand} from "../god-mode/shared/god-mode-commands";
 import {Delta} from "jsondiffpatch";
 import {executeServerCommand} from "./execute-server-commands";
-import {executeGodCommand} from "../god-mode/server/execute-god-commands";
+import {executeGodCommand, syncGodState} from "../god-mode/server/execute-god-commands";
 import deepFreezeStrict = require('deep-freeze-strict');
 
 
@@ -47,8 +47,8 @@ io.on('connection', socket => {
     const statePatch = diff(syncedState, newSyncedState);
     sendCommand({commandName: 'SyncStatePatch', statePatch: statePatch!});
     patchHistory.push(statePatch);
-
     syncedState = deepFreezeStrict(newSyncedState);
+    syncGodState(io, {patchHistory});
   });
 
   socket.on('godCommand', (godCommand: GodModeServerCommand) => {

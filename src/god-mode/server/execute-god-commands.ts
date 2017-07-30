@@ -5,6 +5,7 @@ import {unpatch} from "../../shared/json-diff-patch";
 import * as R from "ramda";
 import {assertUnreachable} from "../../shared/utils";
 import {SocketSession} from "../../server/index";
+import {GodState} from "../shared/god-state";
 import deepFreezeStrict = require("deep-freeze-strict");
 
 interface GodCommandResult {
@@ -14,6 +15,7 @@ interface GodCommandResult {
 interface CurrentState {
   syncedState: SyncedState;
   patchHistory: Delta[];
+  selectedRevision?: number;
   socketSessions: { [socketId: string]: SocketSession };
 }
 
@@ -35,21 +37,39 @@ export function executeGodCommand(io: SocketIO.Server,
         };
       }
       break;
+    case 'selectStateRevision':
+      return selectStateRevision(state, godCommand.revision);
     case 'subscribeToGodState':
       console.log('subscribeToGodState', socket.id);
       state.socketSessions[socket.id].subscribedToGod = true;
-      socket.join(GOD_STATE_ROOM)
-      const godClientCommand: GodModeClientCommand = {
-        commandName: 'SyncGodState',
-        state: {
-          patchHistory: state.patchHistory
-        }
-      }
-      io.sockets.in(GOD_STATE_ROOM).emit(GOD_COMMAND_EVENT_NAME, godClientCommand);
+      socket.join(GOD_STATE_ROOM);
+      syncGodState(io, state);
       break;
     default:
       console.error('unknown godCommand', godCommand);
       assertUnreachable(godCommand);
   }
   return undefined;
+}
+
+function selectStateRevision(state: CurrentState, revision: number) {
+  const lastPatch = state.patchHistory[revision];
+  const stateClone = R.clone(state.syncedState);
+  if (lastPatch) {
+    console.log('undo', lastPatch);
+    return {
+      syncedState: deepFreezeStrict(unpatch(stateClone, lastPatch))
+    };
+  }
+  return undefined;
+}
+
+export function syncGodState(io: SocketIO.Server, state: GodState) {
+  const godClientCommand: GodModeClientCommand = {
+    commandName: 'SyncGodState',
+    state: {
+      patchHistory: state.patchHistory
+    }
+  };
+  io.sockets.in(GOD_STATE_ROOM).emit(GOD_COMMAND_EVENT_NAME, godClientCommand);
 }

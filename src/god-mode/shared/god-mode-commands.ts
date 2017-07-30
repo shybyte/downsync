@@ -8,7 +8,12 @@ interface SubscribeToGodStateCommand {
   commandName: 'subscribeToGodState';
 }
 
-export type GodModeServerCommand = UndoCommand | SubscribeToGodStateCommand;
+export interface SelectStateRevisionCommand {
+  commandName: 'selectStateRevision';
+  revision: number;
+}
+
+export type GodModeServerCommand = UndoCommand | SubscribeToGodStateCommand | SelectStateRevisionCommand;
 
 
 interface SyncGodStateCommand {
