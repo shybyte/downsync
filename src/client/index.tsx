@@ -38,7 +38,7 @@ function render() {
         {
           localState.isGodModeActive ?
             <SplitPane split="horizontal" minSize={50} defaultSize={100}>
-              <div><GodModePage syncedState={syncedState} socket={socket}/></div>
+              <GodModePage syncedState={syncedState} socket={socket}/>
               <App syncedState={syncedState} sendServerCommand={sendServerCommand} startGodMode={startGodMode}/>
             </SplitPane> :
             <App syncedState={syncedState} sendServerCommand={sendServerCommand} startGodMode={startGodMode}/>
@@ -69,6 +69,7 @@ socket.on('command', (clientCommand: ClientCommand) => {
   render();
 });
 
+startGodMode();
 
 
 

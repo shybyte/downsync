@@ -26,6 +26,7 @@ const state: CurrentState = {
   syncedState: deepFreezeStrict(JSON.parse(fs.readFileSync('data/state.json', 'utf8'))),
   patchHistory: [{}],
   socketSessions: {},
+  selectedRevision: 0
 };
 
 
@@ -48,6 +49,7 @@ io.on('connection', socket => {
     const statePatch = diff(state.syncedState, newSyncedState);
     sendCommand({commandName: 'SyncStatePatch', statePatch: statePatch!});
     state.patchHistory.push(statePatch);
+    state.selectedRevision = state.patchHistory.length - 1;
     state.syncedState = deepFreezeStrict(newSyncedState);
     syncGodState(io, state);
   });

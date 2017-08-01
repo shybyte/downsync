@@ -7,8 +7,6 @@ import {Route, Switch} from 'react-router';
 import ArticlePage from './article/ArticlePage';
 import {NavLink} from 'react-router-dom';
 
-const logo = require('./logo.svg');
-
 interface AppProps {
   sendServerCommand: (command: ServerCommand) => void;
   syncedState?: SyncedState;
@@ -54,8 +52,6 @@ class App extends React.Component<AppProps, {}> {
     return (
       <div className="App">
         <div className="App-header">
-          <img src={logo} className="App-logo" alt="logo"/>
-          <h2>Welcome to DownSync!</h2>
           <NavLink to="/" exact={true}>Home</NavLink>
           <a
             href="#"

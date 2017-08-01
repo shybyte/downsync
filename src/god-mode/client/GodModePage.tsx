@@ -2,6 +2,7 @@ import * as React from 'react';
 import {SyncedState} from '../../shared/synced-state';
 import {GOD_COMMAND_EVENT_NAME, GodModeClientCommand, GodModeServerCommand} from "../shared/god-mode-commands";
 import {GodState} from "../shared/god-state";
+import './GodModePage.css';
 
 interface GodModeProps {
   socket: SocketIOClient.Socket;
@@ -55,17 +56,41 @@ class GodModePage extends React.Component<GodModeProps, PageState> {
     sendGodCommand(this.props.socket, {commandName: 'selectStateRevision', revision});
   }
 
+  onSelectRevisionEvent = (ev: React.SyntheticEvent<HTMLInputElement | HTMLSelectElement>) => {
+    this.onSelectRevision(parseInt(ev.currentTarget.value, 10));
+  }
+
+
   render() {
     const godState = this.state.godState;
     if (!godState) {
       return <div>Loading</div>;
     }
     return (
-      <div>
-        <button onClick={this.onUndo}>Undo</button>
-        {godState.patchHistory.map((delta, i) => {
-          return <button key={i} onClick={() => this.onSelectRevision(i)} title={JSON.stringify(delta)}>{i}</button>;
-        })}
+      <div className="god-mode-page">
+        <div className="god-mode-toolbar">
+          {godState.selectedRevision} / {godState.patchHistory.length - 1}
+          <button onClick={this.onUndo}>Undo</button>
+          <input
+            type="range"
+            min={0}
+            max={godState.patchHistory.length - 1}
+            step={1}
+            value={godState.selectedRevision}
+            onChange={this.onSelectRevisionEvent}
+          />
+          <select
+            value={godState.selectedRevision}
+            onChange={this.onSelectRevisionEvent}
+          >
+            {godState.patchHistory.map((delta, i) =>
+              <option key={i} value={i}>{i}</option>
+            )}
+          </select>
+        </div>
+        <pre>
+          {JSON.stringify(this.props.syncedState, null, 2)}
+        </pre>
       </div>
     );
   }

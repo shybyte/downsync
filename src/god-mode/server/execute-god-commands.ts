@@ -5,7 +5,7 @@ import {getStateOfRevision, unpatch} from "../../shared/json-diff-patch";
 import * as R from "ramda";
 import {assertUnreachable} from "../../shared/utils";
 import {SocketSession} from "../../server/index";
-import {GodState} from "../shared/god-state";
+import {GodState, RevisionId} from "../shared/god-state";
 import deepFreezeStrict = require("deep-freeze-strict");
 
 interface GodCommandResult {
@@ -15,7 +15,7 @@ interface GodCommandResult {
 export interface CurrentState {
   syncedState: SyncedState;
   patchHistory: Delta[];
-  selectedRevision?: number;
+  selectedRevision: RevisionId;
   socketSessions: { [socketId: string]: SocketSession };
 }
 
@@ -56,7 +56,7 @@ function selectStateRevision(state: CurrentState, revision: number) {
   console.log(`selectStateRevision ${state.selectedRevision} => ${revision}`);
   const restoredState = getStateOfRevision(
     state.syncedState, state.patchHistory,
-    R.defaultTo((state.patchHistory.length - 1), state.selectedRevision), revision);
+    state.selectedRevision, revision);
   state.selectedRevision = revision;
   return {
     syncedState: deepFreezeStrict(restoredState)
@@ -66,9 +66,7 @@ function selectStateRevision(state: CurrentState, revision: number) {
 export function syncGodState(io: SocketIO.Server, state: GodState) {
   const godClientCommand: GodModeClientCommand = {
     commandName: 'SyncGodState',
-    state: {
-      patchHistory: state.patchHistory
-    }
+    state
   };
   io.sockets.in(GOD_STATE_ROOM).emit(GOD_COMMAND_EVENT_NAME, godClientCommand);
 }
