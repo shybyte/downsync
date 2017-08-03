@@ -4,6 +4,9 @@ import {GOD_COMMAND_EVENT_NAME, GodModeClientCommand, GodModeServerCommand} from
 import {GodState} from "../shared/god-state";
 import './GodModePage.css';
 import * as SplitPane from 'react-split-pane';
+import ReactJsonView from 'react-json-view';
+
+console.log('ReactJsonView', ReactJsonView);
 
 
 interface GodModeProps {
@@ -95,12 +98,12 @@ class GodModePage extends React.Component<GodModeProps, PageState> {
 
           <SplitPane split="vertical" minSize={20} defaultSize="50%">
             <div>
-              <pre>{JSON.stringify(this.props.syncedState, null, 2)}</pre>
+              <ReactJsonView src={this.props.syncedState!} name="State" collapsed={true} {...JSON_VIEW_PROPS} />
             </div>
 
             <SplitPane split="horizontal" minSize={20} defaultSize="50%">
-              <pre>{JSON.stringify(currentChange.delta, null, 2)}</pre>
-              <pre>{JSON.stringify(currentChange.command, null, 2)}</pre>
+              <ReactJsonView src={currentChange.delta} name="Diff" {...JSON_VIEW_PROPS} />
+              <ReactJsonView src={currentChange.command} name="Command" {...JSON_VIEW_PROPS} />
             </SplitPane>
           </SplitPane>
         </SplitPane>
@@ -108,5 +111,11 @@ class GodModePage extends React.Component<GodModeProps, PageState> {
     );
   }
 }
+
+const JSON_VIEW_PROPS = {
+  theme: 'monokai',
+  indentWidth: 2,
+  displayDataTypes: false
+};
 
 export default GodModePage;

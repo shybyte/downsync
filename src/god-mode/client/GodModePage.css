@@ -1,5 +1,5 @@
 .god-mode-page {
-  background: black;
+  background: rgb(39, 40, 34);
   color: #ccc;
   overflow: hidden;
   width: 100%;
@@ -13,6 +13,10 @@ pre {
 }
 
 .Pane1 {
-  background: black;
+  background: rgb(39, 40, 34);
 }
 
+
+.Pane{
+  overflow: auto;
+}
