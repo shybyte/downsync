@@ -3,6 +3,8 @@ import {SyncedState} from '../../shared/synced-state';
 import {GOD_COMMAND_EVENT_NAME, GodModeClientCommand, GodModeServerCommand} from "../shared/god-mode-commands";
 import {GodState} from "../shared/god-state";
 import './GodModePage.css';
+import * as SplitPane from 'react-split-pane';
+
 
 interface GodModeProps {
   socket: SocketIOClient.Socket;
@@ -66,31 +68,42 @@ class GodModePage extends React.Component<GodModeProps, PageState> {
     if (!godState) {
       return <div>Loading</div>;
     }
+    const currentChange = godState.patchHistory[godState.selectedRevision];
     return (
       <div className="god-mode-page">
-        <div className="god-mode-toolbar">
-          {godState.selectedRevision} / {godState.patchHistory.length - 1}
-          <button onClick={this.onUndo}>Undo</button>
-          <input
-            type="range"
-            min={0}
-            max={godState.patchHistory.length - 1}
-            step={1}
-            value={godState.selectedRevision}
-            onChange={this.onSelectRevisionEvent}
-          />
-          <select
-            value={godState.selectedRevision}
-            onChange={this.onSelectRevisionEvent}
-          >
-            {godState.patchHistory.map((delta, i) =>
-              <option key={i} value={i}>{i}</option>
-            )}
-          </select>
-        </div>
-        <pre>
-          {JSON.stringify(this.props.syncedState, null, 2)}
-        </pre>
+        <SplitPane split="horizontal" minSize={40} defaultSize={40}>
+          <div className="god-mode-toolbar">
+            {godState.selectedRevision} / {godState.patchHistory.length - 1}
+            <button onClick={this.onUndo}>Undo</button>
+            <input
+              type="range"
+              min={0}
+              max={godState.patchHistory.length - 1}
+              step={1}
+              value={godState.selectedRevision}
+              onChange={this.onSelectRevisionEvent}
+            />
+            <select
+              value={godState.selectedRevision}
+              onChange={this.onSelectRevisionEvent}
+            >
+              {godState.patchHistory.map((delta, i) =>
+                <option key={i} value={i}>{i}</option>
+              )}
+            </select>
+          </div>
+
+          <SplitPane split="vertical" minSize={20} defaultSize="50%">
+            <div>
+              <pre>{JSON.stringify(this.props.syncedState, null, 2)}</pre>
+            </div>
+
+            <SplitPane split="horizontal" minSize={20} defaultSize="50%">
+              <pre>{JSON.stringify(currentChange.delta, null, 2)}</pre>
+              <pre>{JSON.stringify(currentChange.command, null, 2)}</pre>
+            </SplitPane>
+          </SplitPane>
+        </SplitPane>
       </div>
     );
   }

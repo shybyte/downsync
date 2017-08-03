@@ -2,20 +2,15 @@
   background: black;
   color: #ccc;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
   width: 100%;
 }
 
 .god-mode-toolbar {
-  flex: 0;
 }
 
-.god-mode-page pre {
-  flex: 1;
+pre {
   overflow: auto;
 }
-
 
 .Pane1 {
   background: black;
