@@ -94,6 +94,9 @@ class GodModePage extends React.Component<GodModeProps, PageState> {
                 <option key={i} value={i}>{i}</option>
               )}
             </select>
+
+            <span className="dateTime">{formatDate(new Date(currentChange.time))}</span>
+
           </div>
 
           <SplitPane split="vertical" minSize={20} defaultSize="50%">
@@ -117,5 +120,11 @@ const JSON_VIEW_PROPS = {
   indentWidth: 2,
   displayDataTypes: false
 };
+
+function formatDate(date: Date) {
+  const localTime = date.toLocaleTimeString();
+  const localDate = date.toLocaleDateString();
+  return localTime + ' ' + localDate
+}
 
 export default GodModePage;

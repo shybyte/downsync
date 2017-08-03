@@ -16,7 +16,10 @@ pre {
   background: rgb(39, 40, 34);
 }
 
-
 .Pane{
   overflow: auto;
+}
+
+.dateTime {
+  padding: 0 1em;
 }
