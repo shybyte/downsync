@@ -1,20 +1,10 @@
 import {GodState} from "./god-state";
 
-interface UndoCommand {
-  commandName: 'undo';
-}
-
 interface SubscribeToGodStateCommand {
   commandName: 'subscribeToGodState';
 }
 
-export interface SelectStateRevisionCommand {
-  commandName: 'selectStateRevision';
-  revision: number;
-}
-
-export type GodModeServerCommand = UndoCommand | SubscribeToGodStateCommand | SelectStateRevisionCommand;
-
+export type GodModeServerCommand = SubscribeToGodStateCommand ;
 
 interface SyncGodStateCommand {
   commandName: 'SyncGodState';

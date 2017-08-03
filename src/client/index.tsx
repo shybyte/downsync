@@ -12,7 +12,6 @@ import {ServerCommand} from '../shared/server-commands';
 import {assertUnreachable} from '../shared/utils';
 import {patch} from '../shared/json-diff-patch';
 import GodModePage from "../god-mode/client/GodModePage";
-import * as SplitPane from 'react-split-pane';
 
 let syncedState: SyncedState;
 const socket: SocketIOClient.Socket = io('http://localhost:8000');
@@ -32,15 +31,15 @@ function startGodMode() {
 }
 
 function render() {
+  function renderApp(props: any) {
+    return <App syncedState={props.syncedState} sendServerCommand={sendServerCommand} startGodMode={startGodMode}/>;
+  }
   ReactDOM.render(
     <BrowserRouter>
       <div>
         {
           localState.isGodModeActive ?
-            <SplitPane split="horizontal" minSize={50} defaultSize="50%">
-              <GodModePage syncedState={syncedState} socket={socket}/>
-              <App syncedState={syncedState} sendServerCommand={sendServerCommand} startGodMode={startGodMode}/>
-            </SplitPane> :
+              <GodModePage syncedState={syncedState} socket={socket} renderApp={renderApp}/> :
             <App syncedState={syncedState} sendServerCommand={sendServerCommand} startGodMode={startGodMode}/>
         }
       </div>

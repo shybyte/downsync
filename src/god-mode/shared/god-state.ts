@@ -4,7 +4,6 @@ export type RevisionId = number;
 
 export interface GodState<C= Object> {
   patchHistory: StateChange<C>[];
-  selectedRevision: RevisionId;
 }
 
 export interface StateChange<C= Object> {

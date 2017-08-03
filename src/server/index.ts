@@ -55,11 +55,7 @@ io.on('connection', socket => {
   });
 
   socket.on('godCommand', (godCommand: GodModeServerCommand) => {
-    const godCommandResult = executeGodCommand(io, state, socket, godCommand);
-    if (godCommandResult) {
-      state.syncedState = godCommandResult.syncedState;
-      syncCompleteState();
-    }
+    executeGodCommand(io, state, socket, godCommand);
     syncGodState(io, state);
   });
 
