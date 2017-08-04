@@ -1,15 +1,13 @@
 import * as React from 'react';
 import {SyncedState} from '../../shared/synced-state';
 import {GOD_COMMAND_EVENT_NAME, GodModeClientCommand, GodModeServerCommand} from "../shared/god-mode-commands";
-import {GodState, RevisionId} from "../shared/god-state";
+import {GodState, RevisionId, StateChange} from "../shared/god-state";
 import './GodModePage.css';
 import * as SplitPane from 'react-split-pane';
 import ReactJsonView from 'react-json-view';
 import {getStateOfRevision} from "../../shared/json-diff-patch";
+import {assertUnreachable} from "../../shared/utils";
 import throttle = require('lodash.throttle');
-
-console.log('ReactJsonView', ReactJsonView);
-
 
 interface GodModeProps {
   socket: SocketIOClient.Socket;
@@ -32,43 +30,62 @@ function sendGodCommand(socket: SocketIOClient.Socket, godCommand: GodModeServer
 }
 
 class GodModePage extends React.Component<GodModeProps, PageState> {
-  oldSocketId: string;
+  oldSocket?: SocketIOClient.Socket;
   state: PageState = {};
   selectedRevisionRangeElement: HTMLInputElement;
   selectedRevisionSelectElement: HTMLSelectElement;
 
   componentDidMount() {
-    this.subscribeToGodState();
+    this.subscribeToGodState(this.props.socket);
   }
 
   componentWillReceiveProps(nextProps: GodModeProps) {
-    console.log('componentWillReceiveProps', this.oldSocketId, nextProps.socket.id);
-    if (this.oldSocketId !== nextProps.socket.id) {
-      this.subscribeToGodState();
+    console.log('componentWillReceiveProps', this.oldSocket && this.oldSocket.id, nextProps.socket.id);
+    if (this.oldSocket !== nextProps.socket) {
+      this.subscribeToGodState(nextProps.socket);
     }
   }
 
-  subscribeToGodState() {
-    this.oldSocketId = this.props.socket.id;
+  subscribeToGodState(socket: SocketIOClient.Socket) {
+    console.log('subscribeToGodState');
+    this.oldSocket = socket;
     sendGodCommand(this.props.socket, {commandName: 'subscribeToGodState'});
-    this.props.socket.on(GOD_COMMAND_EVENT_NAME, (command: GodModeClientCommand) => {
-      switch (command.commandName) {
-        case 'SyncGodState':
-          console.log('got god state', command.state);
-          const latestRevision = command.state.patchHistory.length - 1;
-          this.setState({
-            loadedGodState: {
-              godState: command.state,
-              syncedState: this.props.syncedState!,
-              selectedRevision: latestRevision
-            }
-          });
-          this.applySelectedRevisionToInputElements(latestRevision)
-          break;
-        default:
-          console.log('Unknown command', command.commandName);
+    socket.on(GOD_COMMAND_EVENT_NAME, this.onGodCommand);
+    socket.on('disconnect', () => {
+      console.log('disconnected', socket.id);
+      socket.off(GOD_COMMAND_EVENT_NAME, this.onGodCommand);
+      this.oldSocket = undefined;
+    });
+  }
+
+  private onGodCommand = (command: GodModeClientCommand) => {
+    switch (command.commandName) {
+      case 'SyncCompleteGodState':
+        console.log('got complete god state', command.state);
+        this.setLoadedGodState(command.state.patchHistory);
+        break;
+      case 'SyncChange':
+        console.log('got new change', command.stateChange);
+        const patchHistory = this.state.loadedGodState!.godState.patchHistory;
+        patchHistory.push(command.stateChange);
+        this.setLoadedGodState(patchHistory);
+        break;
+      default:
+        console.log('Unknown command', command);
+        assertUnreachable(command);
+    }
+  }
+
+  private setLoadedGodState(stateChanges: StateChange[]) {
+    const latestRevision = stateChanges.length - 1;
+    this.setState({
+      loadedGodState: {
+        godState: {patchHistory: stateChanges},
+        syncedState: this.props.syncedState!,
+        selectedRevision: latestRevision
       }
     });
+    this.applySelectedRevisionToInputElements(latestRevision);
   }
 
   private applySelectedRevisionToInputElements(revision: RevisionId) {

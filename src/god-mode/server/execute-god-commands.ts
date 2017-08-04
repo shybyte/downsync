@@ -1,19 +1,15 @@
 import {GOD_COMMAND_EVENT_NAME, GodModeClientCommand, GodModeServerCommand} from "../shared/god-mode-commands";
-import {SyncedState} from "../../shared/synced-state";
 import {SocketSession} from "../../server/index";
-import {GodState, RevisionId, StateChange} from "../shared/god-state";
+import {GodState, StateChange} from "../shared/god-state";
 
 export interface CurrentState {
-  syncedState: SyncedState;
   patchHistory: StateChange[];
-  selectedRevision: RevisionId;
   socketSessions: { [socketId: string]: SocketSession };
 }
 
 const GOD_STATE_ROOM = 'goodStateRoom';
 
-export function executeGodCommand(io: SocketIO.Server,
-                                  state: CurrentState,
+export function executeGodCommand(state: CurrentState,
                                   socket: SocketIO.Socket,
                                   godCommand: GodModeServerCommand) {
   console.log('godCommand', godCommand);
@@ -22,6 +18,7 @@ export function executeGodCommand(io: SocketIO.Server,
       console.log('subscribeToGodState', socket.id);
       state.socketSessions[socket.id].subscribedToGod = true;
       socket.join(GOD_STATE_ROOM);
+      syncCompleteGodState(socket, state);
       break;
     default:
       console.error('unknown godCommand', godCommand);
@@ -30,10 +27,18 @@ export function executeGodCommand(io: SocketIO.Server,
   return undefined;
 }
 
-export function syncGodState(io: SocketIO.Server, state: GodState) {
+export function syncCompleteGodState(socket: SocketIO.Socket, state: GodState) {
   const godClientCommand: GodModeClientCommand = {
-    commandName: 'SyncGodState',
-    state
+    commandName: 'SyncCompleteGodState',
+    state: {patchHistory: state.patchHistory}
+  };
+  socket.emit(GOD_COMMAND_EVENT_NAME, godClientCommand);
+}
+
+export function syncStateChange(io: SocketIO.Server, stateChange: StateChange) {
+  const godClientCommand: GodModeClientCommand = {
+    commandName: 'SyncChange',
+    stateChange
   };
   io.sockets.in(GOD_STATE_ROOM).emit(GOD_COMMAND_EVENT_NAME, godClientCommand);
 }

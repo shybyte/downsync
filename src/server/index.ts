@@ -8,7 +8,9 @@ import * as R from 'ramda';
 import {diff} from '../shared/json-diff-patch';
 import {GodModeServerCommand} from "../god-mode/shared/god-mode-commands";
 import {executeServerCommand} from "./execute-server-commands";
-import {CurrentState, executeGodCommand, syncGodState} from "../god-mode/server/execute-god-commands";
+import {executeGodCommand, syncStateChange} from "../god-mode/server/execute-god-commands";
+import {SyncedState} from "../shared/synced-state";
+import {StateChange} from "../god-mode/shared/god-state";
 import deepFreezeStrict = require('deep-freeze-strict');
 
 
@@ -21,12 +23,16 @@ export interface SocketSession {
   subscribedToGod?: boolean;
 }
 
+export interface ServerState {
+  syncedState: SyncedState;
+  patchHistory: StateChange[];
+  socketSessions: { [socketId: string]: SocketSession };
+}
 
-const state: CurrentState = {
+const state: ServerState = {
   syncedState: deepFreezeStrict(JSON.parse(fs.readFileSync('data/state.json', 'utf8'))),
   patchHistory: [{delta: {}, command: {}, time: Date.now()}],
   socketSessions: {},
-  selectedRevision: 0
 };
 
 
@@ -48,15 +54,14 @@ io.on('connection', socket => {
     executeServerCommand(newSyncedState, command);
     const statePatch = diff(state.syncedState, newSyncedState);
     sendCommand({commandName: 'SyncStatePatch', statePatch: statePatch!});
-    state.patchHistory.push({time: Date.now(), command: command, delta: statePatch});
-    state.selectedRevision = state.patchHistory.length - 1;
+    const stateChange = {time: Date.now(), command: command, delta: statePatch};
+    state.patchHistory.push(stateChange);
     state.syncedState = deepFreezeStrict(newSyncedState);
-    syncGodState(io, state);
+    syncStateChange(io, stateChange);
   });
 
   socket.on('godCommand', (godCommand: GodModeServerCommand) => {
-    executeGodCommand(io, state, socket, godCommand);
-    syncGodState(io, state);
+    executeGodCommand(state, socket, godCommand);
   });
 
   socket.on('disconnect', () => {
