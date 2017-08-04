@@ -8,10 +8,12 @@ import * as R from 'ramda';
 import {diff} from '../shared/json-diff-patch';
 import {GodModeServerCommand} from "../god-mode/shared/god-mode-commands";
 import {executeServerCommand} from "./execute-server-commands";
-import {executeGodCommand, syncStateChange} from "../god-mode/server/execute-god-commands";
+import {executeGodCommand, syncGodStateChange} from "../god-mode/server/execute-god-commands";
 import {SyncedState} from "../shared/synced-state";
 import {StateChange} from "../god-mode/shared/god-state";
 import deepFreezeStrict = require('deep-freeze-strict');
+
+const PORT = 8000;
 
 
 const app = express();
@@ -57,11 +59,15 @@ io.on('connection', socket => {
     const stateChange = {time: Date.now(), command: command, delta: statePatch};
     state.patchHistory.push(stateChange);
     state.syncedState = deepFreezeStrict(newSyncedState);
-    syncStateChange(io, stateChange);
+    syncGodStateChange(io, stateChange);
   });
 
   socket.on('godCommand', (godCommand: GodModeServerCommand) => {
-    executeGodCommand(state, socket, godCommand);
+    executeGodCommand(io, state, socket, godCommand, (newSyncedState) => {
+      const statePatch = diff(state.syncedState, newSyncedState);
+      sendCommand({commandName: 'SyncStatePatch', statePatch: statePatch!});
+      state.syncedState = deepFreezeStrict(newSyncedState);
+    });
   });
 
   socket.on('disconnect', () => {
@@ -77,6 +83,7 @@ app.get('/', (req, res) => {
   res.send('<h1>Hello world</h1>');
 });
 
-server.listen(8000, () => {
-  console.log('listening on *:8000');
+
+server.listen(PORT, () => {
+  console.log('listening on *:' + PORT);
 });

@@ -117,6 +117,13 @@ class GodModePage extends React.Component<GodModeProps, PageState> {
     this.onSelectRevisionThrottled(revisionId);
   }
 
+  revertToSelectedRevision = () => {
+    sendGodCommand(this.props.socket, {
+      commandName: 'revertToRevision',
+      revisionId: this.state.loadedGodState!.selectedRevision
+    });
+  }
+
 
   render() {
     const loadedGodState = this.state.loadedGodState;
@@ -151,6 +158,12 @@ class GodModePage extends React.Component<GodModeProps, PageState> {
 
               of {godState.patchHistory.length - 1}
               <span className="dateTime">{formatDate(new Date(currentChange.time))}</span>
+              <button
+                onClick={() => this.revertToSelectedRevision()}
+                title="Revert server state to selected revision!"
+              >
+                Revert
+              </button>
 
             </div>
 

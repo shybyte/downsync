@@ -1,10 +1,15 @@
-import {GodState, StateChange} from "./god-state";
+import {GodState, RevisionId, StateChange} from "./god-state";
 
 interface SubscribeToGodStateCommand {
   commandName: 'subscribeToGodState';
 }
 
-export type GodModeServerCommand = SubscribeToGodStateCommand ;
+interface RevertToRevision {
+  commandName: 'revertToRevision';
+  revisionId: RevisionId;
+}
+
+export type GodModeServerCommand = SubscribeToGodStateCommand | RevertToRevision ;
 
 interface SyncGodStateCommand {
   commandName: 'SyncCompleteGodState';
