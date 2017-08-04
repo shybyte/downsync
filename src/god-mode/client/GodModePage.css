@@ -16,10 +16,15 @@ pre {
   background: rgb(39, 40, 34);
 }
 
-.Pane{
+.Pane {
   overflow: auto;
 }
 
 .dateTime {
   padding: 0 1em;
+}
+
+.god-mode-page select {
+  display: inline-block;
+  margin: 0 0.5em;
 }

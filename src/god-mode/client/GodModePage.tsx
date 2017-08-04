@@ -1,11 +1,12 @@
 import * as React from 'react';
 import {SyncedState} from '../../shared/synced-state';
 import {GOD_COMMAND_EVENT_NAME, GodModeClientCommand, GodModeServerCommand} from "../shared/god-mode-commands";
-import {GodState} from "../shared/god-state";
+import {GodState, RevisionId} from "../shared/god-state";
 import './GodModePage.css';
 import * as SplitPane from 'react-split-pane';
 import ReactJsonView from 'react-json-view';
 import {getStateOfRevision} from "../../shared/json-diff-patch";
+import throttle = require('lodash.throttle');
 
 console.log('ReactJsonView', ReactJsonView);
 
@@ -23,7 +24,7 @@ interface PageState {
 interface LoadedGodState {
   godState: GodState;
   syncedState: SyncedState;
-  selectedRevision: number;
+  selectedRevision: RevisionId;
 }
 
 function sendGodCommand(socket: SocketIOClient.Socket, godCommand: GodModeServerCommand) {
@@ -33,6 +34,8 @@ function sendGodCommand(socket: SocketIOClient.Socket, godCommand: GodModeServer
 class GodModePage extends React.Component<GodModeProps, PageState> {
   oldSocketId: string;
   state: PageState = {};
+  selectedRevisionRangeElement: HTMLInputElement;
+  selectedRevisionSelectElement: HTMLSelectElement;
 
   componentDidMount() {
     this.subscribeToGodState();
@@ -52,13 +55,15 @@ class GodModePage extends React.Component<GodModeProps, PageState> {
       switch (command.commandName) {
         case 'SyncGodState':
           console.log('got god state', command.state);
+          const latestRevision = command.state.patchHistory.length - 1;
           this.setState({
             loadedGodState: {
               godState: command.state,
               syncedState: this.props.syncedState!,
-              selectedRevision: command.state.patchHistory.length - 1
+              selectedRevision: latestRevision
             }
           });
+          this.applySelectedRevisionToInputElements(latestRevision)
           break;
         default:
           console.log('Unknown command', command.commandName);
@@ -66,7 +71,13 @@ class GodModePage extends React.Component<GodModeProps, PageState> {
     });
   }
 
-  onSelectRevision(revision: number) {
+  private applySelectedRevisionToInputElements(revision: RevisionId) {
+    const revisionString = '' + revision;
+    this.selectedRevisionRangeElement.value = revisionString;
+    this.selectedRevisionSelectElement.value = revisionString;
+  }
+
+  onSelectRevision = (revision: RevisionId) => {
     console.log('onSelectRevisionEvent', revision);
     const loadedGodState = this.state.loadedGodState!;
     const newSyncedState = getStateOfRevision(loadedGodState.syncedState,
@@ -81,8 +92,12 @@ class GodModePage extends React.Component<GodModeProps, PageState> {
     });
   }
 
+  onSelectRevisionThrottled = throttle(this.onSelectRevision, 500);
+
   onSelectRevisionEvent = (ev: React.SyntheticEvent<HTMLInputElement | HTMLSelectElement>) => {
-    this.onSelectRevision(parseInt(ev.currentTarget.value, 10));
+    const revisionId = parseInt(ev.currentTarget.value, 10);
+    this.applySelectedRevisionToInputElements(revisionId);
+    this.onSelectRevisionThrottled(revisionId);
   }
 
 
@@ -98,24 +113,26 @@ class GodModePage extends React.Component<GodModeProps, PageState> {
         <div className="god-mode-page">
           <SplitPane split="horizontal" minSize={40} defaultSize={40}>
             <div className="god-mode-toolbar">
-              {selectedRevision} / {godState.patchHistory.length - 1}
               <input
                 type="range"
                 min={0}
                 max={godState.patchHistory.length - 1}
                 step={1}
-                value={selectedRevision}
+                defaultValue={'' + selectedRevision}
                 onChange={this.onSelectRevisionEvent}
+                ref={el => this.selectedRevisionRangeElement = el!}
               />
               <select
-                value={selectedRevision}
+                defaultValue={'' + selectedRevision}
                 onChange={this.onSelectRevisionEvent}
+                ref={el => this.selectedRevisionSelectElement = el!}
               >
                 {godState.patchHistory.map((delta, i) =>
                   <option key={i} value={i}>{i}</option>
                 )}
               </select>
 
+              of {godState.patchHistory.length - 1}
               <span className="dateTime">{formatDate(new Date(currentChange.time))}</span>
 
             </div>
