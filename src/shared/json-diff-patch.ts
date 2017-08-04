@@ -29,17 +29,17 @@ export function getStateOfRevision<T>(sourceState: T, deltas: Delta[], sourceRev
 
   let currentState = R.clone(sourceState);
   if (sourceRevision < targetRevision) {
-    console.log('patch it into the future');
+    // console.log('patch it into the future');
     for (const delta of deltas.slice(sourceRevision + 1, targetRevision + 1)) {
-      console.log('patch', delta);
+      // console.log('patch', delta);
       currentState = patch(currentState, delta);
     }
   } else if (sourceRevision > targetRevision) {
-    console.log('patch it into the past');
+    // console.log('patch it into the past');
     const reversedDeltas = R.reverse(deltas.slice(targetRevision + 1, sourceRevision + 1));
-    console.log('reversedDeltas', reversedDeltas);
+    // console.log('reversedDeltas', reversedDeltas);
     for (const delta of reversedDeltas) {
-      console.log('patch', delta);
+      // console.log('patch', delta);
       currentState = unpatch(currentState, delta);
     }
   }
