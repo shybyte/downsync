@@ -124,6 +124,13 @@ class GodModePage extends React.Component<GodModeProps, PageState> {
     });
   }
 
+  onEditStateNode = (opts: ReactJsonView.OnEditProps) => {
+    console.log('onEditStateNode', opts);
+    this.setState({
+      loadedGodState: {...this.state.loadedGodState!, syncedState: opts.updated_src}
+    });
+    return true;
+  }
 
   render() {
     const loadedGodState = this.state.loadedGodState;
@@ -169,7 +176,13 @@ class GodModePage extends React.Component<GodModeProps, PageState> {
 
             <SplitPane split="vertical" minSize={20} defaultSize="50%">
               <div>
-                <ReactJsonView src={syncedState} name="State" collapsed={true} {...JSON_VIEW_PROPS} />
+                <ReactJsonView
+                  {...JSON_VIEW_PROPS}
+                  src={syncedState}
+                  name="State"
+                  collapsed={true}
+                  onEdit={this.onEditStateNode}
+                />
               </div>
 
               <SplitPane split="horizontal" minSize={20} defaultSize="50%">
