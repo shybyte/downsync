@@ -1,7 +1,11 @@
 import {Delta, DiffPatcher} from 'jsondiffpatch';
 import R = require("ramda");
 
-const diffPatcher = new DiffPatcher({});
+const diffPatcher = new DiffPatcher({
+  objectHash: function (obj: any) {
+    return obj.id;
+  },
+});
 
 export function diff<T>(original: T, mofified: T): Delta {
   return diffPatcher.diff(original, mofified)!;
