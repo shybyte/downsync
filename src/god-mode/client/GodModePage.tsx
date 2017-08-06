@@ -124,8 +124,8 @@ class GodModePage extends React.Component<GodModeProps, PageState> {
     });
   }
 
-  onEditStateNode = (opts: ReactJsonView.OnEditProps) => {
-    console.log('onEditStateNode', opts);
+  onEditStateNode = (opts: ReactJsonView.OnChangeProps) => {
+    console.log('onChangeStateNode', opts);
     this.setState({
       loadedGodState: {...this.state.loadedGodState!, syncedState: opts.updated_src}
     });
@@ -182,6 +182,8 @@ class GodModePage extends React.Component<GodModeProps, PageState> {
                   name="State"
                   collapsed={true}
                   onEdit={this.onEditStateNode}
+                  onDelete={this.onEditStateNode}
+                  onAdd={this.onEditStateNode}
                 />
               </div>
 
