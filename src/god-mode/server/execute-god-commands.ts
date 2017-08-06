@@ -1,5 +1,5 @@
 import {GOD_COMMAND_EVENT_NAME, GodModeClientCommand, GodModeServerCommand} from "../shared/god-mode-commands";
-import {SocketSession} from "../../server/index";
+import {SocketSession} from "../../server/server";
 import {GodState, StateChange} from "../shared/god-state";
 import {assertUnreachable} from "../../shared/utils";
 import {getStateOfRevision} from "../../shared/json-diff-patch";
