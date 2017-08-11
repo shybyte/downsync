@@ -124,6 +124,14 @@ class GodModePage extends React.Component<GodModeProps, PageState> {
     });
   }
 
+  revertToChangedState = () => {
+    sendGodCommand(this.props.socket, {
+      commandName: 'revertToChangedState',
+      revisionId: this.state.loadedGodState!.selectedRevision,
+      changedState: this.state.loadedGodState!.syncedState
+    });
+  }
+
   onEditStateNode = (opts: ReactJsonView.OnChangeProps) => {
     console.log('onChangeStateNode', opts);
     this.setState({
@@ -170,6 +178,13 @@ class GodModePage extends React.Component<GodModeProps, PageState> {
                 title="Revert server state to selected revision!"
               >
                 Revert
+              </button>
+
+              <button
+                onClick={() => this.revertToChangedState()}
+                title="Change server state and delete future!"
+              >
+                MakeReal
               </button>
 
             </div>

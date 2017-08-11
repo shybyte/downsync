@@ -6,7 +6,7 @@ declare namespace ReactJsonView {
     updated_src: S; // new src value
   }
 
-  export interface OnEditProps<T= any, S= any> extends OnChangeProps<S>{
+  export interface OnEditProps<T= any, S= any> extends OnChangeProps<S> {
     name: string; // new var name
     namespace: string[]; // list, namespace indicating var location
     existing_src: S; // new src value

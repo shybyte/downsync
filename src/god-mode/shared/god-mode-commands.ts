@@ -9,7 +9,13 @@ interface RevertToRevision {
   revisionId: RevisionId;
 }
 
-export type GodModeServerCommand = SubscribeToGodStateCommand | RevertToRevision ;
+export interface RevertToChangedStateCommand<S= any> {
+  commandName: 'revertToChangedState';
+  revisionId: RevisionId;
+  changedState: S;
+}
+
+export type GodModeServerCommand = SubscribeToGodStateCommand | RevertToRevision | RevertToChangedStateCommand ;
 
 interface SyncGodStateCommand {
   commandName: 'SyncCompleteGodState';

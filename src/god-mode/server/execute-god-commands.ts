@@ -1,4 +1,9 @@
-import {GOD_COMMAND_EVENT_NAME, GodModeClientCommand, GodModeServerCommand} from "../shared/god-mode-commands";
+import {
+  GOD_COMMAND_EVENT_NAME,
+  GodModeClientCommand,
+  GodModeServerCommand,
+  RevertToChangedStateCommand
+} from "../shared/god-mode-commands";
 import {SocketSession} from "../../server/server";
 import {GodState, StateChange} from "../shared/god-state";
 import {assertUnreachable} from "../../shared/utils";
@@ -22,13 +27,11 @@ export function executeGodCommand<S= any>(io: SocketIO.Server,
   console.log('godCommand', godCommand);
   switch (godCommand.commandName) {
     case 'subscribeToGodState':
-      console.log('subscribeToGodState', socket.id);
       state.socketSessions[socket.id].subscribedToGod = true;
       socket.join(GOD_STATE_ROOM);
       syncCompleteGodState(socket, state);
       break;
     case 'revertToRevision':
-      console.log('revertToRevision', godCommand.revisionId);
       const newSyncedState = getStateOfRevision(state.syncedState,
                                                 state.patchHistory.map(x => x.delta),
                                                 state.patchHistory.length - 1, godCommand.revisionId);
@@ -36,11 +39,24 @@ export function executeGodCommand<S= any>(io: SocketIO.Server,
       state.patchHistory.splice(godCommand.revisionId + 1);
       syncCompleteGodStateToAll(io, state);
       break;
+    case 'revertToChangedState':
+      revertToChangedState(io, state, handleNewSyncedState, godCommand);
+      break;
     default:
       console.error('unknown godCommand', godCommand);
       assertUnreachable(godCommand);
   }
   return undefined;
+}
+
+function revertToChangedState(io: SocketIO.Server,
+                              state: CurrentState,
+                              handleNewSyncedState: HandleNewSyncedState,
+                              godCommand: RevertToChangedStateCommand) {
+  const newSyncedState = godCommand.changedState;
+  handleNewSyncedState(newSyncedState);
+  state.patchHistory.splice(godCommand.revisionId + 1);
+  syncCompleteGodStateToAll(io, state);
 }
 
 export function syncCompleteGodStateToAll(io: SocketIO.Server, state: GodState) {
