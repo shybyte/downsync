@@ -37,7 +37,7 @@ export class ObjectFileStorage<T extends HasId> {
   private saveObject(object: T) {
     console.log('saveObject', object.id);
     const completeFilename = path.join(this.folderPath, object.id + '.json');
-    fs.writeFileSync(completeFilename, JSON.stringify(object), 'utf8');
+    fs.writeFileSync(completeFilename, JSON.stringify(object, null, 2), 'utf8');
   }
 
 }
