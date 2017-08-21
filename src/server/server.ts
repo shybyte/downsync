@@ -11,6 +11,7 @@ import {executeServerCommand} from "./execute-server-commands";
 import {executeGodCommand, syncGodStateChange} from "../god-mode/server/execute-god-commands";
 import {SyncedState} from "../shared/synced-state";
 import {StateChange} from "../god-mode/shared/god-state";
+import {ObjectFileStorage} from "./object-file-storage";
 import deepFreezeStrict = require('deep-freeze-strict');
 
 const PORT = 8000;
@@ -31,12 +32,19 @@ export interface ServerState {
   socketSessions: { [socketId: string]: SocketSession };
 }
 
+const articleStorage = new ObjectFileStorage('data/articles');
+
+function loadInitialSyncedState(): SyncedState {
+  const s = JSON.parse(fs.readFileSync('data/state.json', 'utf8'));
+  s.articles = articleStorage.load();
+  return s;
+}
+
 const state: ServerState = {
-  syncedState: deepFreezeStrict(JSON.parse(fs.readFileSync('data/state.json', 'utf8'))),
+  syncedState: deepFreezeStrict(loadInitialSyncedState()),
   patchHistory: [{delta: {}, command: {}, time: Date.now()}],
   socketSessions: {},
 };
-
 
 function sendCommand(clientCommand: ClientCommand) {
   io.emit('command', clientCommand);
@@ -57,6 +65,7 @@ io.on('connection', socket => {
     const statePatch = diff(state.syncedState, newSyncedState);
     sendCommand({commandName: 'SyncStatePatch', statePatch: statePatch!});
     const stateChange = {time: Date.now(), command: command, delta: statePatch};
+    articleStorage.saveIfChanged(newSyncedState.articles, stateChange.delta.articles);
     state.patchHistory.push(stateChange);
     state.syncedState = deepFreezeStrict(newSyncedState);
     syncGodStateChange(io, stateChange);
